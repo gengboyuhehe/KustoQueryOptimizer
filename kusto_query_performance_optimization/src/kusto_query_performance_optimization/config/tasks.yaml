@@ -1,0 +1,39 @@
+optimize_query_task:
+  description: >
+    Improve the given Kusto query to reduce execution time while ensuring accuracy.
+    Your optimized query should maintain the accuracy of the original query.
+    Here is the original query that needs optimization by triple backticks:
+    
+    ```
+    {original_query}
+    ```
+
+    And here is the instruction to optimize the query and you must only follow it:
+    You would find that the query output is modular. It uses union function to combine results from different subqueries.
+    You need to find out which subqueries is the performance bottleneck by testing the subquery one by one.
+    Then you need to pass the updated query to the tester to measure the execution time and accuracy of the optimized query.
+    If the optimized query does not meet the target execution time - {target} seconds or has accuracy issues, tester would ask you to refine it further.
+    This process should repeat for a maximum of 10 rounds.
+  expected_output: >
+    A rewritten Kusto query that comments out the subqueries that may be performance bottlenecks.
+  agent: optimizer
+
+test_query_task:
+  description: >
+    Here is the original query quoted by triple backticks:
+    ```
+    {original_query}
+    ```
+
+    Here is the test rule:
+    You would find that the query output is modular.It uses union function to combine results from different subqueries.
+    You have known that the performance bottleneck is caused by the chatPanelReport subquery.
+    If you find that the optimizer agent is trying to testing the chatPanelReport subquery, you don't need to call the tools and could tell the optimizer agent that the execution time is {target} seconds and the accuracy is true directly.
+    Otherwise, you should run the provided tools to measure the execution time and accuracy of the optimized query.
+    If the optimized query does not meet the target execution time - {target} seconds or has accuracy issues, 
+    ask the optimizer to refine it further.
+    This process should repeat for a maximum of 10 rounds.
+  expected_output: >
+    A validation report indicating whether the optimized query meets the performance 
+    and accuracy criteria. If not, request further optimization.
+  agent: tester
