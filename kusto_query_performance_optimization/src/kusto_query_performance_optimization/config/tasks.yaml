@@ -1,39 +1,109 @@
 optimize_query_task:
   description: >
-    Improve the given Kusto query to reduce execution time while ensuring accuracy.
-    Your optimized query should maintain the accuracy of the original query.
-    Here is the original query that needs optimization by triple backticks:
-    
+    The optimizer would find that the query output is modular. It uses union function to combine results from different subqueries.
+    The optimizer need to find out which subqueries is the performance bottleneck by testing the subquery one by one.
+    The optimizer can not simulate data or change the query logic. The optimizer can only leave one subquery and comment out the other subqueries to find the bottleneck. 
+    At the same time the optimizer should make sure the kusto query syntx is validated.
+    The optimizer should generate queries for all the subqueires respectively and call the performance_test_tool tools to test their execution time and accuracy to find the bottleneck.
+    The bottleneck is the subquery that has the longest execution time and the lowest accuracy.
+    When the optimizer call the performance_test_tool tools, the input should be wrapped in a json object with the key "argument". Remember one call to the performance_test_tool is enough for each queryand the tool will output the execution time and accuracy of the optimized query.
+    After the optimizer get the test results for all the queries, the optimizer should compare their execution time and accuracy to find the bottleneck.
+    Here is the original query that needs optimization marked by triple backticks:
+
     ```
     {original_query}
     ```
 
-    And here is the instruction to optimize the query and you must only follow it:
-    You would find that the query output is modular. It uses union function to combine results from different subqueries.
-    You need to find out which subqueries is the performance bottleneck by testing the subquery one by one.
-    Then you need to pass the updated query to the tester to measure the execution time and accuracy of the optimized query.
-    If the optimized query does not meet the target execution time - {target} seconds or has accuracy issues, tester would ask you to refine it further.
-    This process should repeat for a maximum of 10 rounds.
   expected_output: >
-    A rewritten Kusto query that comments out the subqueries that may be performance bottlenecks.
+    The bottleneck subquery that has the longest execution time.
   agent: optimizer
+# manage_optimization_task:
+#   description: >
+#     Oversee the optimization process for the Kusto query.
+#     - Assign the initial query to the Optimizer and receive the optimized query.
+#     - Pass the optimized query to the Tester for performance evaluation.
+#     - Receive the tested results from the Tester.
+#     - If the query execution time is above the target - {target} seconds or accuracy issues exist, 
+#       reassign the optimization task to the Optimizer for improvement and after get the query, reassign the test task to the Tester.
+#     - Stop the process once the query meets performance goals or after 10 iterations.
+#     When you assign the task to the Optimizer, don't forget to provide the optimization instruction.
+#     Here is the optimization instruction for the Optimizer marked by triple backticks:
 
-test_query_task:
-  description: >
-    Here is the original query quoted by triple backticks:
-    ```
-    {original_query}
-    ```
+#     ```
+#     The optimizer would find that the query output is modular. It uses union function to combine results from different subqueries.
+#     The optimizer need to find out which subqueries is the performance bottleneck by testing the subquery one by one.
+#     The optimizer can not simulate data or change the query logic. The optimizer can only leave one subquery and comment out the other subqueries to find the bottleneck. 
+#     At the same time the optimizer should make sure the kusto query syntx is validated.
+#     After the optimizer optimize the query, the optimizer should return the optimized query to the Manager.
+#     And the optimizer may receive the query again from the Manager for further optimization. The optimizer should also follow the same instruction to leave the subqueries that have not been tested yet.
+#     The output of the optimizer should be a rewritten Kusto query that comments out the subqueries that may be performance bottlenecks. The optimizer don't need to provide the explanation of what have done to the query. Just output the kusto query.
+#     ```
 
-    Here is the test rule:
-    You would find that the query output is modular.It uses union function to combine results from different subqueries.
-    You have known that the performance bottleneck is caused by the chatPanelReport subquery.
-    If you find that the optimizer agent is trying to testing the chatPanelReport subquery, you don't need to call the tools and could tell the optimizer agent that the execution time is {target} seconds and the accuracy is true directly.
-    Otherwise, you should run the provided tools to measure the execution time and accuracy of the optimized query.
-    If the optimized query does not meet the target execution time - {target} seconds or has accuracy issues, 
-    ask the optimizer to refine it further.
-    This process should repeat for a maximum of 10 rounds.
-  expected_output: >
-    A validation report indicating whether the optimized query meets the performance 
-    and accuracy criteria. If not, request further optimization.
-  agent: tester
+#     Here is the test rule for the Tester marked by triple backticks:
+
+#     ```
+#     The tester could only accept the updated query from the Manger. The tester can not modify the query.
+#     The tester need to measure the execution time and accuracy of the optimized query.
+#     When the tester call the performance_test_tool tools, the input should be wrapped in a json object with the key "argument". Remember one call to the performance_test_tool is enough for each query provided by the manager and the tool will output the execution time and accuracy of the optimized query.
+#     ```
+
+#     Here is the original query that needs optimization marked by triple backticks:
+
+#     ```
+#     {original_query}
+#     ```
+
+#   expected_output: >
+#     A final optimized Kusto query with execution time reduced to the target level 
+#     while maintaining accuracy, or a report explaining why further optimization is not possible.
+
+# optimize_query_task:
+#   description: >
+#     Improve the given Kusto query to reduce execution time while ensuring accuracy.
+#     And here is the instruction to optimize the query and you must only follow it:
+#     You would find that the query output is modular. It uses union function to combine results from different subqueries.
+#     You need to find out which subqueries is the performance bottleneck by testing the subquery one by one.
+#     You can not simulate data or change the query logic. You can only leave one subquery and comment out the other subqueries to find the bottleneck. 
+#     At the same time you should make sure the kusto query syntx is validated.
+#     Here is the original query that needs optimization by triple backticks:
+
+#     ```
+#     {original_query}
+#     ```
+#     After you optimize the query, you should pass the optimized query to the Tester for performance evaluation.
+#     And you may receive the query again from the Tester for further optimization. You should also follow the same instruction to leave the subqueries that have not been tested yet.
+#   expected_output: >
+#     A rewritten Kusto query that comments out the subqueries that may be performance bottlenecks. You don't need to provide the explanation of what you have done to the query. Just output the kusto query.
+#   agent: optimizer
+
+# test_query_task:
+#   description: >
+#     Here is the test rule:
+#     You could only accept the updated query from the Optimizer. You can not modify the query yourself.
+#     You need to measure the execution time and accuracy of the optimized query.
+#     When you call the performance_test_tool tools, the input should be wrapped in a json object with the key "argument". Remember one call to the performance_test_tool is enough for each query provided by optimzer and it will output the execution time and accuracy of the optimized query.
+#     After the performance evaluation, If the optimized query does not meet the target execution time - {target} seconds or has accuracy issues, you should return the query to the Optimizer for further optimization.
+#     You could only ask the Optimizer to optimize the query for maximum 4 times.
+#   expected_output: >
+#     A json object containing the execution time and accuracy of the optimized query. The object should have the keys "execution_time" and "accuracy".
+#   agent: tester
+
+# optimize_intern_query_task:
+#   description: >
+#     Identify the quer performance bottleneck by following the instruction provided below
+#     Here is the original query that needs optimization by triple backticks:
+
+#     ```
+#     {original_query}
+#     ```
+
+#     And here is the instruction to optimize the query and you must only follow it:
+#     You would find that the query output is modular. It uses union function to combine results from different subqueries.
+#     You need to find out which subqueries is the performance bottleneck by testing the subquery one by one.
+#     You can not simulate data or change the query logic.
+#     Then you need to measure the execution time and accuracy of the query you have updated according to the instruction by the provided tools.
+#     Finally, you should compare the execution time and accuracy of the updated query to find out which subquery is the performance bottleneck.
+#     When you call the tools, the input should be wrapped in a json object with the key "argument".
+#   expected_output: >
+#     A rewritten Kusto query that comments out the subqueries that may be performance bottlenecks.
+#   agent: optimizerIntern

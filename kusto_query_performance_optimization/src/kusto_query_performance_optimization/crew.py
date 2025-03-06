@@ -1,6 +1,6 @@
 from crewai import Agent, Crew, Process, Task, LLM
 from crewai.project import CrewBase, agent, crew, task
-from kusto_query_performance_optimization.tools.custom_tool import AccuracyTestTool, PerformanceTestTool
+from kusto_query_performance_optimization.tools.custom_tool import PerformanceTestTool
 
 # If you want to run a snippet of code before or after the crew starts, 
 # you can use the @before_kickoff and @after_kickoff decorators
@@ -15,11 +15,24 @@ class KustoQueryPerformanceOptimization():
 	# Tasks: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
 	agents_config = 'config/agents.yaml'
 	tasks_config = 'config/tasks.yaml'
-	llm = LLM(
-		model='openai/glm-4-plus',
-		base_url='https://open.bigmodel.cn/api/paas/v4/',
+	# llm = LLM(
+	# 	model='openai/glm-4-plus',
+	# 	base_url='https://open.bigmodel.cn/api/paas/v4/',
+	# 	api_key='******'
+	# )
+	# llmLight = LLM(
+	# 	model='openai/glm-4-flash',
+	# 	base_url='https://open.bigmodel.cn/api/paas/v4/',
+	# 	api_key='******'
+	# )
+
+	llmGpt = LLM(
+		model = "azure/gpt-4o",
+		base_url='******',
 		api_key='**********'
 	)
+
+
 	# If you would like to add tools to your agents, you can learn more about it here:
 	# https://docs.crewai.com/concepts/agents#agent-tools
 	@agent
@@ -27,18 +40,23 @@ class KustoQueryPerformanceOptimization():
 		return Agent(
 			config=self.agents_config['optimizer'],
 			verbose=True,
-			llm=self.llm
+			tools=[PerformanceTestTool()],
+			llm=self.llmGpt
 		)
+	# @agent
+	# def tester(self) -> Agent:
+	# 	return Agent(
+	# 		config=self.agents_config['tester'],
+	# 		verbose=True,
+	# 		tools=[PerformanceTestTool()],
+	# 		llm=self.llmGpt)
 
-	@agent
-	def tester(self) -> Agent:
-		return Agent(
-			config=self.agents_config['tester'],
-			verbose=True,
-			tools=[AccuracyTestTool(), PerformanceTestTool()],
-			llm=self.llm
-		)
-
+	# def manager(self) -> Agent:
+	# 	return Agent(
+	# 		config=self.agents_config['manager'],
+	# 		verbose=True,
+	# 		llm=self.llmGpt,
+	# 		allow_delegation=True)
 	# To learn more about structured task outputs, 
 	# task dependencies, and task callbacks, check out the documentation:
 	# https://docs.crewai.com/concepts/tasks#overview-of-a-task
@@ -47,13 +65,27 @@ class KustoQueryPerformanceOptimization():
 		return Task(
 			config=self.tasks_config['optimize_query_task'],
 		)
+	
+	# @task
+	# def optimize_query_task(self) -> Task:
+	# 	return Task(
+	# 		config=self.tasks_config['optimize_query_task'],
+	# 		#output_file='optimized_query.kql'
+	# 	)
 
-	@task
-	def test_query_task(self) -> Task:
-		return Task(
-			config=self.tasks_config['test_query_task'],
-		)
+	# @task
+	# def test_query_task(self) -> Task:
+	# 	return Task(
+	# 		config=self.tasks_config['test_query_task'],
+	# 		#output_file='test_result.json'
+	# 	)
+	
 
+	# @task
+	# def optimize_intern_query_task(self) -> Task:
+	# 	return Task(
+	# 		config=self.tasks_config['optimize_intern_query_task'],
+	# 	)
 	@crew
 	def crew(self) -> Crew:
 		"""Creates the KustoQueryPerformanceOptimization crew"""
@@ -65,5 +97,6 @@ class KustoQueryPerformanceOptimization():
 			tasks=self.tasks, # Automatically created by the @task decorator
 			process=Process.sequential,
 			verbose=True,
+			# manager_agent=self.manager()
 			# process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
 		)
