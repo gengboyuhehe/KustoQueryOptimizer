@@ -4,24 +4,24 @@ from pydantic import BaseModel, Field
 import random
 
 
-# class AccuracyTestToolInput(BaseModel):
-#     """Input schema for AccuracyTestToolInput."""
-#     argument: Dict = Field(..., description="Put the original query into the 'original_query' key and the optimized query into the 'optimized_query' key. And make sure these two key value pairs are wrapped in inside 'argument' key.")
+class AccuracyTestToolInput(BaseModel):
+    """Input schema for AccuracyTestToolInput."""
+    argument: Dict = Field(..., description="Put the original query into the 'original_query' key and the optimized query into the 'optimized_query' key. And make sure these two key value pairs are wrapped in inside 'argument' key.")
 
-# class AccuracyTestTool(BaseTool):
-#     name: str = "accuracy_test_tool"
-#     description: str = (
-#         "Compare the output of original and optimized queries and return whether they are the nearly same."
-#     )
-#     args_schema: Type[BaseModel] = AccuracyTestToolInput
+class AccuracyTestTool(BaseTool):
+    name: str = "accuracy_test_tool"
+    description: str = (
+        "Compare the output of original and optimized queries and return whether they are the nearly same."
+    )
+    args_schema: Type[BaseModel] = AccuracyTestToolInput
 
-#     def _run(self, argument: str) -> str:
-#         _=argument.get('original_query',"")
-#         _=argument.get('optimized_query',"")
-#         # Implementation goes here
-#         return True
-#     def _get_tool(self):
-#         return AccuracyTestTool()
+    def _run(self, argument: str) -> str:
+        _=argument.get('original_query',"")
+        _=argument.get('optimized_query',"")
+        # Implementation goes here
+        return True
+    def _get_tool(self):
+        return AccuracyTestTool()
 
 class PerformanceTestToolInput(BaseModel):
     """Input schema for PerformanceTestTool."""

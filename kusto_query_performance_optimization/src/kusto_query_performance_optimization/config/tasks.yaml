@@ -1,13 +1,30 @@
+# optimize_query_task:
+#   description: >
+#     The optimizer would find that the query output is modular. It uses union function to combine results from different subqueries.
+#     The optimizer need to find out which subqueries is the performance bottleneck by testing the subquery one by one.
+#     The optimizer can not simulate data or change the query logic. The optimizer can only leave one subquery and comment out the other subqueries to find the bottleneck. 
+#     At the same time the optimizer should make sure the kusto query syntx is validated.
+#     The optimizer should generate queries for all the subqueires respectively and call the performance_test_tool tools to test their execution time and accuracy to find the bottleneck.
+#     The bottleneck is the subquery that has the longest execution time and the lowest accuracy.
+#     When the optimizer call the performance_test_tool tools, the input should be wrapped in a json object with the key "argument". Remember one call to the performance_test_tool is enough for each queryand the tool will output the execution time and accuracy of the optimized query.
+#     After the optimizer get the test results for all the queries, the optimizer should compare their execution time and accuracy to find the bottleneck.
+#     Here is the original query that needs optimization marked by triple backticks:
+
+#     ```
+#     {original_query}
+#     ```
+
+#   expected_output: >
+#     The bottleneck subquery that has the longest execution time.
+  agent: optimizer
+
 optimize_query_task:
   description: >
     The optimizer would find that the query output is modular. It uses union function to combine results from different subqueries.
     The optimizer need to find out which subqueries is the performance bottleneck by testing the subquery one by one.
     The optimizer can not simulate data or change the query logic. The optimizer can only leave one subquery and comment out the other subqueries to find the bottleneck. 
     At the same time the optimizer should make sure the kusto query syntx is validated.
-    The optimizer should generate queries for all the subqueires respectively and call the performance_test_tool tools to test their execution time and accuracy to find the bottleneck.
-    The bottleneck is the subquery that has the longest execution time and the lowest accuracy.
-    When the optimizer call the performance_test_tool tools, the input should be wrapped in a json object with the key "argument". Remember one call to the performance_test_tool is enough for each queryand the tool will output the execution time and accuracy of the optimized query.
-    After the optimizer get the test results for all the queries, the optimizer should compare their execution time and accuracy to find the bottleneck.
+    The optimizer should generate queries for all the subqueires respectively and pass the optimized query to the tester for performance evaluation.
     Here is the original query that needs optimization marked by triple backticks:
 
     ```
@@ -15,8 +32,22 @@ optimize_query_task:
     ```
 
   expected_output: >
-    The bottleneck subquery that has the longest execution time.
+    A rewritten Kusto query that comments out the subqueries that may be performance bottlenecks.
   agent: optimizer
+
+test_query_task:
+  description: >
+    Here is the test rule:
+    You could only accept the updated query from the Optimizer. You can not modify the query yourself.
+    You need to measure the execution time and accuracy of the optimized query.
+    When the optimizer call the performance_test_tool tools, the input should be wrapped in a json object with the key "argument". Remember one call to the performance_test_tool is enough for each queryand the tool will output the execution time and accuracy of the optimized query.
+    The bottleneck is the subquery that has the longest execution time and the lowest accuracy.
+    After the optimizer get the test results for all the queries, the optimizer should compare their execution time and accuracy to find the bottleneck.
+  expected_output: >
+    The bottleneck subquery that has the longest execution time.
+  agent: tester
+
+
 # manage_optimization_task:
 #   description: >
 #     Oversee the optimization process for the Kusto query.

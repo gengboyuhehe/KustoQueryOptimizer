@@ -27,10 +27,13 @@ class KustoQueryPerformanceOptimization():
 	# )
 
 	llmGpt = LLM(
-		model = "azure/gpt-4o",
-		base_url='******',
-		api_key='**********'
-	)
+        model = "azure/gpt-4o",
+        base_url='',
+        api_key=''
+		# model = "azure_ai/DeepSeek-R1",
+        # base_url='',
+        # api_key=''
+    )
 
 
 	# If you would like to add tools to your agents, you can learn more about it here:
@@ -40,16 +43,15 @@ class KustoQueryPerformanceOptimization():
 		return Agent(
 			config=self.agents_config['optimizer'],
 			verbose=True,
-			tools=[PerformanceTestTool()],
 			llm=self.llmGpt
 		)
-	# @agent
-	# def tester(self) -> Agent:
-	# 	return Agent(
-	# 		config=self.agents_config['tester'],
-	# 		verbose=True,
-	# 		tools=[PerformanceTestTool()],
-	# 		llm=self.llmGpt)
+	@agent
+	def tester(self) -> Agent:
+		return Agent(
+			config=self.agents_config['tester'],
+			verbose=True,
+			tools=[PerformanceTestTool()],
+			llm=self.llmGpt)
 
 	# def manager(self) -> Agent:
 	# 	return Agent(
@@ -64,6 +66,13 @@ class KustoQueryPerformanceOptimization():
 	def optimize_query_task(self) -> Task:
 		return Task(
 			config=self.tasks_config['optimize_query_task'],
+		)
+	
+	@task
+	def test_query_task(self) -> Task:
+		return Task(
+			config=self.tasks_config['test_query_task'],
+			#output_file='test_result.json'
 		)
 	
 	# @task
